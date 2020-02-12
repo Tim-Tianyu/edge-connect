@@ -109,3 +109,5 @@ datasets
 *.zip
 img_align_celeba/
 irregular_mask/
+data/
+mask/
