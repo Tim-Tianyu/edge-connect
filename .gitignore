@@ -106,3 +106,6 @@ ENV/
 results
 checkpoints
 datasets
+*.zip
+img_align_celeba/
+irregular_mask/
