@@ -22,6 +22,7 @@ class Dataset(torch.utils.data.Dataset):
         self.edge_data = self.load_flist(edge_flist)
         self.mask_data = self.load_flist(mask_flist)
 
+        print(config)
         self.input_size = config.INPUT_SIZE
         self.sigma = config.SIGMA
         self.edge = config.EDGE
@@ -51,8 +52,9 @@ class Dataset(torch.utils.data.Dataset):
 
     def load_item(self, index):
 
+        #size = self.input_size
+        self.input_size=176
         size = self.input_size
-
         # load image
         img = imread(self.data[index])
 
@@ -60,10 +62,12 @@ class Dataset(torch.utils.data.Dataset):
         if len(img.shape) < 3:
             img = gray2rgb(img)
 
+        print(img.shape)
         # resize/crop if needed
         if size != 0:
             img = self.resize(img, size, size)
 
+        print(img.shape)
         # create grayscale image
         img_gray = rgb2gray(img)
 
@@ -157,7 +161,7 @@ class Dataset(torch.utils.data.Dataset):
 
     def resize(self, img, height, width, centerCrop=True):
         imgh, imgw = img.shape[0:2]
-
+        print(img.shape)
         if centerCrop and imgh != imgw:
             # center crop
             side = np.minimum(imgh, imgw)
