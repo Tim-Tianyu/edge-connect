@@ -13,9 +13,7 @@ with open('list_eval_partition.csv') as csvfile:
     with tqdm.tqdm(total=200000) as pbar_test:
         for row in reader:
             if row['partition'] == '0':
-                file = "img_align_celeba/img_align_celeba/"+row["image_id"]
-                if (os.path.isfile(file)):
-                    shutil.move(file, "data/celeba/train/"+row["image_id"])
+                pass
             elif row['partition'] == '1':
                 file = "img_align_celeba/img_align_celeba/"+row["image_id"]
                 if (os.path.isfile(file)):
