@@ -129,15 +129,15 @@ class EdgeGenerator(BaseNetwork):
             self.init_weights()
 
     def forward(self, x):
-        print ("edge at step 1 is ", x.size())
+        #print ("edge at step 1 is ", x.size())
         x = self.encoder(x)
-        print ("edge at step 2 is ", x.size())
+        #print ("edge at step 2 is ", x.size())
         x = self.middle(x)
-        print ("edge at step 3 is ", x.size())
+        #print ("edge at step 3 is ", x.size())
         x = self.decoder(x)
-        print ("edge at step 4 is ", x.size())
+        #print ("edge at step 4 is ", x.size())
         x = torch.sigmoid(x)
-        print ("edge is ", x.size())
+        #print ("edge is ", x.size())
         return x
 
 
