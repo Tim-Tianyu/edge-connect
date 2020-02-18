@@ -52,6 +52,7 @@ DEFAULT_CONFIG = {
     'STYLE_LOSS_WEIGHT': 1,         # style loss weight
     'CONTENT_LOSS_WEIGHT': 1,       # perceptual loss weight
     'INPAINT_ADV_LOSS_WEIGHT': 0.01,# adversarial loss weight
+    'LANDMARK_LOSS_WEIGHT': 1,
 
     'GAN_LOSS': 'nsgan',            # nsgan | lsgan | hinge
     'GAN_POOL_SIZE': 0,             # fake images pool size
