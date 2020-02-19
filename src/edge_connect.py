@@ -127,6 +127,7 @@ class EdgeConnect():
                     mae = (torch.sum(torch.abs(images - outputs_merged)) / torch.sum(images)).float()
                     logs.append(('psnr', psnr.item()))
                     logs.append(('mae', mae.item()))
+                    logs.append(('landmark_loss', torch.sum(gen_landmark_loss).item()))
 
                     # backward
                     self.inpaint_model.backward(gen_loss, dis_loss, gen_landmark_loss)
@@ -150,7 +151,8 @@ class EdgeConnect():
                     mae = (torch.sum(torch.abs(images - outputs_merged)) / torch.sum(images)).float()
                     logs.append(('psnr', psnr.item()))
                     logs.append(('mae', mae.item()))
-
+                    logs.append(('landmark_loss', torch.sum(gen_landmark_loss).item()))
+                    
                     # backward
                     self.inpaint_model.backward(gen_loss, dis_loss, gen_landmark_loss)
                     iteration = self.inpaint_model.iteration
@@ -172,6 +174,7 @@ class EdgeConnect():
                     e_logs.append(('rec', recall.item()))
                     i_logs.append(('psnr', psnr.item()))
                     i_logs.append(('mae', mae.item()))
+                    i_logs.append(('landmark_loss', torch.sum(gen_landmark_loss).item()))
                     logs = e_logs + i_logs
 
                     # backward
@@ -253,6 +256,7 @@ class EdgeConnect():
                 mae = (torch.sum(torch.abs(images - outputs_merged)) / torch.sum(images)).float()
                 logs.append(('psnr', psnr.item()))
                 logs.append(('mae', mae.item()))
+                logs.append(('landmark_loss', torch.sum(gen_landmark_loss).item()))
 
 
             # inpaint with edge model
@@ -269,7 +273,7 @@ class EdgeConnect():
                 mae = (torch.sum(torch.abs(images - outputs_merged)) / torch.sum(images)).float()
                 logs.append(('psnr', psnr.item()))
                 logs.append(('mae', mae.item()))
-
+                logs.append(('landmark_loss', torch.sum(gen_landmark_loss).item()))
 
             # joint model
             else:
@@ -287,6 +291,7 @@ class EdgeConnect():
                 e_logs.append(('rec', recall.item()))
                 i_logs.append(('psnr', psnr.item()))
                 i_logs.append(('mae', mae.item()))
+                i_logs.append(('landmark_loss', torch.sum(i_gen_landmark_loss).item()))
                 logs = e_logs + i_logs
 
 
