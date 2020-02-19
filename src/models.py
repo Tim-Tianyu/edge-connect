@@ -180,12 +180,6 @@ class InpaintingModel(BaseModel):
             lr=float(config.LR),
             betas=(config.BETA1, config.BETA2)
         )
-        
-        self.gen_landmark_loss = optim.Adam(
-            params=generator.parameters(),
-            lr=float(config.LR),
-            betas=(config.BETA1, config.BETA2)
-        )
 
         self.dis_optimizer = optim.Adam(
             params=discriminator.parameters(),
