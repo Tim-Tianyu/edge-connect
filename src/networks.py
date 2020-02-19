@@ -61,29 +61,29 @@ class InpaintGenerator(BaseNetwork):
             blocks.append(block)
 
         self.middle = nn.Sequential(*blocks)
-        
+
         self.encoder_landmark = nn.Sequential(
             nn.Conv2d(in_channels=256, out_channels=256, kernel_size=4, stride=2, padding=1), # 1,048,576
             nn.InstanceNorm2d(256, track_running_stats=False),
             nn.ReLU(True)
         )
-        
+
         self.conv_landmark = nn.Sequential(
             nn.MaxPool2d(kernel_size=2),
             nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=3, padding=1), # 589,824
             nn.InstanceNorm2d(256, track_running_stats=False),
             nn.ReLU(True),
         )
-        
+
         self.liner_landmark = nn.Sequential(
             nn.Linear(4*4*256, 256), # 1,048,576
             nn.Dropout(p=0.3),
             nn.Linear(256,10), # 2560
             nn.Sigmoid()
         )
-        
+
         self.decoder_landmark = nn.Sequential(
-            nn.ConvTranspose2d(in_channels=256, out_channels=128, kernel_size=4, stride=2, padding=1),
+            nn.ConvTranspose2d(in_channels=256, out_channels=256, kernel_size=4, stride=2, padding=1),
             nn.InstanceNorm2d(128, track_running_stats=False),
             nn.ReLU(True)
         )
@@ -108,11 +108,11 @@ class InpaintGenerator(BaseNetwork):
         x = self.encoder(x)
         x = self.middle(x)
         # landmark prediction
-        l_e = encoder_landmark(x)
-        l_d = decoder_landmark(l_e)
-        landmark = conv_landmark(l_e)
-        landmark = liner_landmark(landmark.view(landmark.size()[0], -1))
-        
+        l_e = self.encoder_landmark(x)
+        l_d = self.decoder_landmark(l_e)
+        landmark = self.conv_landmark(l_e)
+        landmark = self.liner_landmark(landmark.view(landmark.size()[0], -1))
+
         x = torch.cat((x, l_d), dim=1)
         x = self.decoder(x)
         x = (torch.tanh(x) + 1) / 2

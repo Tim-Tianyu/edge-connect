@@ -245,7 +245,7 @@ class EdgeConnect():
             # inpaint model
             elif model == 2:
                 # eval
-                outputs, gen_loss, dis_loss, gen_landmark_loss logs = self.inpaint_model.process(images, edges, masks, landmarks)
+                outputs, gen_loss, dis_loss, gen_landmark_loss,logs = self.inpaint_model.process(images, edges, masks, landmarks)
                 outputs_merged = (outputs * masks) + (images * (1 - masks))
 
                 # metrics
@@ -276,7 +276,7 @@ class EdgeConnect():
                 # eval
                 e_outputs, e_gen_loss, e_dis_loss, e_logs = self.edge_model.process(images_gray, edges, masks)
                 e_outputs = e_outputs * masks + edges * (1 - masks)
-                i_outputs, i_gen_loss, i_dis_loss, i_gen_landmark_loss i_logs = self.inpaint_model.process(images, e_outputs, masks, landmarks)
+                i_outputs, i_gen_loss, i_dis_loss, i_gen_landmark_loss,i_logs = self.inpaint_model.process(images, e_outputs, masks, landmarks)
                 outputs_merged = (i_outputs * masks) + (images * (1 - masks))
 
                 # metrics

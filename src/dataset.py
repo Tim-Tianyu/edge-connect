@@ -11,7 +11,7 @@ from scipy.misc import imread
 from skimage.feature import canny
 from skimage.color import rgb2gray, gray2rgb
 from .utils import create_mask
-
+import csv
 
 class Dataset(torch.utils.data.Dataset):
     def __init__(self, config, flist, edge_flist, mask_flist, augment=True, training=True):
@@ -22,7 +22,7 @@ class Dataset(torch.utils.data.Dataset):
         self.edge_data = self.load_flist(edge_flist)
         self.mask_data = self.load_flist(mask_flist)
         # TODO
-        self.landmarks = ?
+        self.landmarks = self.get_landmarks('list_landmarks_align_celeba.csv')
 
         self.input_size = config.INPUT_SIZE
         self.sigma = config.SIGMA
@@ -75,9 +75,9 @@ class Dataset(torch.utils.data.Dataset):
 
         # load edge
         edge = self.load_edge(img_gray, index, mask)
-        
+
         # TODO
-        landmarks = ?
+        landmarks = self.landmarks[index]
 
         # augment data
         if self.augment and np.random.binomial(1, 0.5) > 0:
@@ -203,3 +203,46 @@ class Dataset(torch.utils.data.Dataset):
 
             for item in sample_loader:
                 yield item
+
+    def get_landmarks(self,filename):
+        #all_lefteye = []
+        #all_righteye = []
+        #all_nose = []
+        #all_leftmouth = []
+        #all_rightmouth = []
+        edge_cut=20
+        landmarks = []
+        size = 178
+        #dict = {}
+
+        with open (filename) as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                lefteye_x=(float(row['lefteye_x']))/size
+                lefteye_y=(float(row['lefteye_y'])-20)/size
+                lefteye = np.array([lefteye_x,lefteye_y])
+                #all_lefteye.append(lefteye)
+
+                righteye_x=(float(row['righteye_x']))/size
+                righteye_y=(float(row['righteye_y'])-20)/size
+                righteye = np.array([righteye_x,righteye_y])
+                #all_righteye.append(righteye)
+
+                nose_x=(float(row['nose_x']))/size
+                nose_y=(float(row['nose_y'])-20)/size
+                nose =  np.array([nose_x,nose_y])
+                #all_nose.append(nose)
+
+                leftmouth_x=(float(row['leftmouth_x']))/size
+                leftmouth_y=(float(row['leftmouth_y'])-20)/size
+                leftmouth= np.array([leftmouth_x,leftmouth_y])
+                #all_nose.append(leftmouth)
+
+                rightmouth_x=(float(row['rightmouth_x']))/size
+                rightmouth_y=(float(row['rightmouth_y'])-20)/size
+                rightmouth= np.array([rightmouth_x,rightmouth_y])
+                #all_rightmouth.append(rightmouth)
+
+                landmarks.append(np.concatenate((lefteye,righteye,nose,leftmouth,rightmouth),axis=None))
+
+        return landmarks
