@@ -21,6 +21,8 @@ class Dataset(torch.utils.data.Dataset):
         self.data = self.load_flist(flist)
         self.edge_data = self.load_flist(edge_flist)
         self.mask_data = self.load_flist(mask_flist)
+        # TODO
+        self.landmarks = ?
 
         self.input_size = config.INPUT_SIZE
         self.sigma = config.SIGMA
@@ -73,6 +75,9 @@ class Dataset(torch.utils.data.Dataset):
 
         # load edge
         edge = self.load_edge(img_gray, index, mask)
+        
+        # TODO
+        landmarks = ?
 
         # augment data
         if self.augment and np.random.binomial(1, 0.5) > 0:
@@ -81,7 +86,7 @@ class Dataset(torch.utils.data.Dataset):
             edge = edge[:, ::-1, ...]
             mask = mask[:, ::-1, ...]
 
-        return self.to_tensor(img), self.to_tensor(img_gray), self.to_tensor(edge), self.to_tensor(mask)
+        return self.to_tensor(img), self.to_tensor(img_gray), self.to_tensor(edge), self.to_tensor(mask), torch.tensor(landmarks).float()
 
     def load_edge(self, img, index, mask):
         sigma = self.sigma

@@ -99,7 +99,7 @@ class EdgeConnect():
                 self.edge_model.train()
                 self.inpaint_model.train()
 
-                images, images_gray, edges, masks = self.cuda(*items)
+                images, images_gray, edges, masks, landmarks = self.cuda(*items)
 
                 # edge model
                 if model == 1:
@@ -119,7 +119,7 @@ class EdgeConnect():
                 # inpaint model
                 elif model == 2:
                     # train
-                    outputs, gen_loss, dis_loss, logs = self.inpaint_model.process(images, edges, masks)
+                    outputs, gen_loss, dis_loss, gen_landmark_loss, logs = self.inpaint_model.process(images, edges, masks, landmarks)
                     outputs_merged = (outputs * masks) + (images * (1 - masks))
 
                     # metrics
@@ -129,7 +129,7 @@ class EdgeConnect():
                     logs.append(('mae', mae.item()))
 
                     # backward
-                    self.inpaint_model.backward(gen_loss, dis_loss)
+                    self.inpaint_model.backward(gen_loss, dis_loss, gen_landmark_loss)
                     iteration = self.inpaint_model.iteration
 
 
@@ -142,7 +142,7 @@ class EdgeConnect():
                     else:
                         outputs = edges
 
-                    outputs, gen_loss, dis_loss, logs = self.inpaint_model.process(images, outputs.detach(), masks)
+                    outputs, gen_loss, dis_loss, gen_landmark_loss, logs = self.inpaint_model.process(images, outputs.detach(), masks, landmarks)
                     outputs_merged = (outputs * masks) + (images * (1 - masks))
 
                     # metrics
@@ -152,7 +152,7 @@ class EdgeConnect():
                     logs.append(('mae', mae.item()))
 
                     # backward
-                    self.inpaint_model.backward(gen_loss, dis_loss)
+                    self.inpaint_model.backward(gen_loss, dis_loss, gen_landmark_loss)
                     iteration = self.inpaint_model.iteration
 
 
@@ -161,7 +161,7 @@ class EdgeConnect():
                     # train
                     e_outputs, e_gen_loss, e_dis_loss, e_logs = self.edge_model.process(images_gray, edges, masks)
                     e_outputs = e_outputs * masks + edges * (1 - masks)
-                    i_outputs, i_gen_loss, i_dis_loss, i_logs = self.inpaint_model.process(images, e_outputs, masks)
+                    i_outputs, i_gen_loss, i_dis_loss, i_gen_landmark_loss, i_logs = self.inpaint_model.process(images, e_outputs, masks, landmarks)
                     outputs_merged = (i_outputs * masks) + (images * (1 - masks))
 
                     # metrics
@@ -175,7 +175,7 @@ class EdgeConnect():
                     logs = e_logs + i_logs
 
                     # backward
-                    self.inpaint_model.backward(i_gen_loss, i_dis_loss)
+                    self.inpaint_model.backward(i_gen_loss, i_dis_loss, i_gen_landmark_loss)
                     self.edge_model.backward(e_gen_loss, e_dis_loss)
                     iteration = self.inpaint_model.iteration
 
@@ -229,7 +229,7 @@ class EdgeConnect():
 
         for items in val_loader:
             iteration += 1
-            images, images_gray, edges, masks = self.cuda(*items)
+            images, images_gray, edges, masks, landmarks = self.cuda(*items)
 
             # edge model
             if model == 1:
@@ -245,7 +245,7 @@ class EdgeConnect():
             # inpaint model
             elif model == 2:
                 # eval
-                outputs, gen_loss, dis_loss, logs = self.inpaint_model.process(images, edges, masks)
+                outputs, gen_loss, dis_loss, gen_landmark_loss logs = self.inpaint_model.process(images, edges, masks, landmarks)
                 outputs_merged = (outputs * masks) + (images * (1 - masks))
 
                 # metrics
@@ -261,7 +261,7 @@ class EdgeConnect():
                 outputs = self.edge_model(images_gray, edges, masks)
                 outputs = outputs * masks + edges * (1 - masks)
 
-                outputs, gen_loss, dis_loss, logs = self.inpaint_model.process(images, outputs.detach(), masks)
+                outputs, gen_loss, dis_loss, gen_landmark_loss, logs = self.inpaint_model.process(images, outputs.detach(), masks, landmarks)
                 outputs_merged = (outputs * masks) + (images * (1 - masks))
 
                 # metrics
@@ -276,7 +276,7 @@ class EdgeConnect():
                 # eval
                 e_outputs, e_gen_loss, e_dis_loss, e_logs = self.edge_model.process(images_gray, edges, masks)
                 e_outputs = e_outputs * masks + edges * (1 - masks)
-                i_outputs, i_gen_loss, i_dis_loss, i_logs = self.inpaint_model.process(images, e_outputs, masks)
+                i_outputs, i_gen_loss, i_dis_loss, i_gen_landmark_loss i_logs = self.inpaint_model.process(images, e_outputs, masks, landmarks)
                 outputs_merged = (i_outputs * masks) + (images * (1 - masks))
 
                 # metrics
@@ -308,7 +308,7 @@ class EdgeConnect():
         index = 0
         for items in test_loader:
             name = self.test_dataset.load_name(index)
-            images, images_gray, edges, masks = self.cuda(*items)
+            images, images_gray, edges, masks, landmarks = self.cuda(*items)
             index += 1
 
             # edge model
@@ -318,13 +318,13 @@ class EdgeConnect():
 
             # inpaint model
             elif model == 2:
-                outputs = self.inpaint_model(images, edges, masks)
+                outputs, _ = self.inpaint_model(images, edges, masks)
                 outputs_merged = (outputs * masks) + (images * (1 - masks))
 
             # inpaint with edge model / joint model
             else:
                 edges = self.edge_model(images_gray, edges, masks).detach()
-                outputs = self.inpaint_model(images, edges, masks)
+                outputs, _ = self.inpaint_model(images, edges, masks)
                 outputs_merged = (outputs * masks) + (images * (1 - masks))
 
             output = self.postprocess(outputs_merged)[0]
@@ -353,7 +353,7 @@ class EdgeConnect():
 
         model = self.config.MODEL
         items = next(self.sample_iterator)
-        images, images_gray, edges, masks = self.cuda(*items)
+        images, images_gray, edges, masks, landmarks = self.cuda(*items)
 
         # edge model
         if model == 1:
@@ -366,7 +366,7 @@ class EdgeConnect():
         elif model == 2:
             iteration = self.inpaint_model.iteration
             inputs = (images * (1 - masks)) + masks
-            outputs = self.inpaint_model(images, edges, masks)
+            outputs, _ = self.inpaint_model(images, edges, masks)
             outputs_merged = (outputs * masks) + (images * (1 - masks))
 
         # inpaint with edge model / joint model
@@ -375,7 +375,7 @@ class EdgeConnect():
             inputs = (images * (1 - masks)) + masks
             outputs = self.edge_model(images_gray, edges, masks).detach()
             edges = (outputs * masks + edges * (1 - masks)).detach()
-            outputs = self.inpaint_model(images, edges, masks)
+            outputs, _ = self.inpaint_model(images, edges, masks)
             outputs_merged = (outputs * masks) + (images * (1 - masks))
 
         if it is not None:
