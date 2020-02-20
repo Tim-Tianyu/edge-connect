@@ -152,7 +152,7 @@ class EdgeConnect():
                     logs.append(('psnr', psnr.item()))
                     logs.append(('mae', mae.item()))
                     logs.append(('landmark_loss', torch.sum(gen_landmark_loss).item()))
-                    
+
                     # backward
                     self.inpaint_model.backward(gen_loss, dis_loss, gen_landmark_loss)
                     iteration = self.inpaint_model.iteration
@@ -197,10 +197,11 @@ class EdgeConnect():
                 # log model at checkpoints
                 if self.config.LOG_INTERVAL and iteration % self.config.LOG_INTERVAL == 0:
                     self.log(logs)
-
+                    print ("log: ", logs)
                 # sample model at checkpoints
                 if self.config.SAMPLE_INTERVAL and iteration % self.config.SAMPLE_INTERVAL == 0:
                     self.sample()
+                    print ("sample found")
 
                 # evaluate model at checkpoints
                 if self.config.EVAL_INTERVAL and iteration % self.config.EVAL_INTERVAL == 0:
@@ -210,6 +211,7 @@ class EdgeConnect():
                 # save model at checkpoints
                 if self.config.SAVE_INTERVAL and iteration % self.config.SAVE_INTERVAL == 0:
                     self.save()
+                    print("we are saving models")
 
         print('\nEnd training....')
 
@@ -401,6 +403,7 @@ class EdgeConnect():
 
 
         path = os.path.join(self.samples_path, self.model_name)
+        print ("path is :", path)
         name = os.path.join(path, str(iteration).zfill(5) + ".png")
         create_dir(path)
         print('\nsaving sample ' + name)
