@@ -371,8 +371,22 @@ class EdgeConnect():
         elif model == 2:
             iteration = self.inpaint_model.iteration
             inputs = (images * (1 - masks)) + masks
-            outputs, _ = self.inpaint_model(images, edges, masks)
+            outputs, landmarks = self.inpaint_model(images, edges, masks)
             outputs_merged = (outputs * masks) + (images * (1 - masks))
+            outputs_landmarks = outputs_merged.data
+            landmarks = 176 * landmarks.data.numpy()
+            ranges = [[0,0], [0,1], [1,0], [1,1], [-1,-1], [-1,0], [0,-1], [-1,1], [1,-1]]
+            
+            index = 0
+            for l in landmarks:
+                for i in range(0,5):
+                    x = l[:,2*i]
+                    y = l[:,2*i + 1]
+                    for r in ranges:
+                        outputs_landmarks[index,0, x+r[0], y+r[1]] = 1
+                        outputs_landmarks[index,1, x+r[0], y+r[1]] = 1
+                        outputs_landmarks[index,2, x+r[0], y+r[1]] = 1
+                index = index+1
 
         # inpaint with edge model / joint model
         else:
@@ -396,6 +410,7 @@ class EdgeConnect():
             self.postprocess(edges),
             self.postprocess(outputs),
             self.postprocess(outputs_merged),
+            self.postprocess(outputs_landmarks),
             img_per_row = image_per_row
         )
 
