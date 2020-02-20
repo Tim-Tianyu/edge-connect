@@ -219,27 +219,27 @@ class Dataset(torch.utils.data.Dataset):
             reader = csv.DictReader(csvfile)
             for row in reader:
                 lefteye_x=(float(row['lefteye_x']))/size
-                lefteye_y=(float(row['lefteye_y'])-20)/size
+                lefteye_y=(float(row['lefteye_y'])-edge_cut)/size
                 lefteye = np.array([lefteye_x,lefteye_y])
                 #all_lefteye.append(lefteye)
 
                 righteye_x=(float(row['righteye_x']))/size
-                righteye_y=(float(row['righteye_y'])-20)/size
+                righteye_y=(float(row['righteye_y'])-edge_cut)/size
                 righteye = np.array([righteye_x,righteye_y])
                 #all_righteye.append(righteye)
 
                 nose_x=(float(row['nose_x']))/size
-                nose_y=(float(row['nose_y'])-20)/size
+                nose_y=(float(row['nose_y'])-edge_cut)/size
                 nose =  np.array([nose_x,nose_y])
                 #all_nose.append(nose)
 
                 leftmouth_x=(float(row['leftmouth_x']))/size
-                leftmouth_y=(float(row['leftmouth_y'])-20)/size
+                leftmouth_y=(float(row['leftmouth_y'])-edge_cut)/size
                 leftmouth= np.array([leftmouth_x,leftmouth_y])
                 #all_nose.append(leftmouth)
 
                 rightmouth_x=(float(row['rightmouth_x']))/size
-                rightmouth_y=(float(row['rightmouth_y'])-20)/size
+                rightmouth_y=(float(row['rightmouth_y'])-edge_cut)/size
                 rightmouth= np.array([rightmouth_x,rightmouth_y])
                 #all_rightmouth.append(rightmouth)
 
