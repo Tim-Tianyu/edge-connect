@@ -70,6 +70,16 @@ class BaseModel(nn.Module):
             'discriminator': self.discriminator.state_dict()
         }, self.dis_weights_path)
 
+    def save_iter(self, path):
+        print('\nsaving %s...\n' % self.name)
+        torch.save({
+            'iteration': self.iteration,
+            'generator': self.generator.state_dict()
+        }, os.path.join(path, name + '_' + str(self.iteration)'_gen.pth'))
+        
+        torch.save({
+            'discriminator': self.discriminator.state_dict()
+        }, os.path.join(path, name + '_' + str(self.iteration)'_dis.pth'))
 
 class EdgeModel(BaseModel):
     def __init__(self, config):

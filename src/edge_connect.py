@@ -39,6 +39,7 @@ class EdgeConnect():
 
         self.samples_path = os.path.join(config.PATH, 'samples')
         self.results_path = os.path.join(config.PATH, 'results')
+        self.model_path = os.path.join(config.PATH, 'models')
 
         if config.RESULTS is not None:
             self.results_path = os.path.join(config.RESULTS)
@@ -69,6 +70,17 @@ class EdgeConnect():
         else:
             self.edge_model.save()
             self.inpaint_model.save()
+        
+    def save_iter(self):
+        if self.config.MODEL == 1:
+            self.edge_model.save_iter(model_path)
+
+        elif self.config.MODEL == 2 or self.config.MODEL == 3:
+            self.inpaint_model.save_iter(model_path)
+
+        else:
+            self.edge_model.save()
+            self.inpaint_model.save_iter(model_path)
 
     def train(self):
         train_loader = DataLoader(
@@ -203,17 +215,19 @@ class EdgeConnect():
                     self.sample()
 
                 # evaluate model at checkpoints
-                if self.config.EVAL_INTERVAL and iteration % self.config.EVAL_INTERVAL == 0:
-                    print('\nstart eval...\n')
-                    self.eval()
+                # if self.config.EVAL_INTERVAL and iteration % self.config.EVAL_INTERVAL == 0:
+                #     print('\nstart eval...\n')
+                #     self.eval()
 
                 # save model at checkpoints
                 if self.config.SAVE_INTERVAL and iteration % self.config.SAVE_INTERVAL == 0:
                     self.save()
-
+            if (self.config.EVAL_INTERVAL):
+                self.eval()
         print('\nEnd training....')
 
     def eval(self):
+        self.save_iter(self)
         val_loader = DataLoader(
             dataset=self.val_dataset,
             batch_size=self.config.BATCH_SIZE,
@@ -296,6 +310,7 @@ class EdgeConnect():
 
 
             logs = [("it", iteration), ] + logs
+            self.log_iter(logs, self.inpaint_model.iteration)
             progbar.add(len(images), values=logs)
 
     def test(self):
@@ -439,6 +454,11 @@ class EdgeConnect():
 
     def log(self, logs):
         with open(self.log_file, 'a') as f:
+            f.write('%s\n' % ' '.join([str(item[1]) for item in logs]))
+    
+    def log_iter(self, logs, iteration):
+        log_file = os.path.join(self.model_path, 'log_' + model_name + '_' + str(iteration) + '.dat')
+        with open(log_file, 'a') as f:
             f.write('%s\n' % ' '.join([str(item[1]) for item in logs]))
 
     def cuda(self, *args):
