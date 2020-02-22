@@ -152,7 +152,7 @@ class EdgeConnect():
                     logs.append(('psnr', psnr.item()))
                     logs.append(('mae', mae.item()))
                     logs.append(('landmark_loss', torch.sum(gen_landmark_loss).item()))
-                    
+
                     # backward
                     self.inpaint_model.backward(gen_loss, dis_loss, gen_landmark_loss)
                     iteration = self.inpaint_model.iteration
@@ -197,10 +197,11 @@ class EdgeConnect():
                 # log model at checkpoints
                 if self.config.LOG_INTERVAL and iteration % self.config.LOG_INTERVAL == 0:
                     self.log(logs)
-
+                    print ("log: ", logs)
                 # sample model at checkpoints
                 if self.config.SAMPLE_INTERVAL and iteration % self.config.SAMPLE_INTERVAL == 0:
                     self.sample()
+                    print ("sample found")
 
                 # evaluate model at checkpoints
                 if self.config.EVAL_INTERVAL and iteration % self.config.EVAL_INTERVAL == 0:
@@ -210,6 +211,7 @@ class EdgeConnect():
                 # save model at checkpoints
                 if self.config.SAVE_INTERVAL and iteration % self.config.SAVE_INTERVAL == 0:
                     self.save()
+                    print("we are saving models")
 
         print('\nEnd training....')
 
@@ -332,19 +334,34 @@ class EdgeConnect():
                 outputs, _ = self.inpaint_model(images, edges, masks)
                 outputs_merged = (outputs * masks) + (images * (1 - masks))
 
-            output = self.postprocess(outputs_merged)[0]
+            #output = self.postprocess(outputs_merged)[0]
             path = os.path.join(self.results_path, name)
             print(index, name)
 
-            imsave(output, path)
+            #imsave(output, path)
 
             if self.debug:
-                edges = self.postprocess(1 - edges)[0]
-                masked = self.postprocess(images * (1 - masks) + masks)[0]
+                # edges = self.postprocess(1 - edges)[0]
+                # masked = self.postprocess(images * (1 - masks) + masks)[0]
                 fname, fext = name.split('.')
 
-                imsave(edges, os.path.join(self.results_path, fname + '_edge.' + fext))
-                imsave(masked, os.path.join(self.results_path, fname + '_masked.' + fext))
+                # imsave(edges, os.path.join(self.results_path, fname + '_edge.' + fext))
+                # imsave(masked, os.path.join(self.results_path, fname + '_masked.' + fext))
+
+                image_per_row = 1
+                #if self.config.SAMPLE_SIZE <= 6:
+                #    image_per_row = 1
+
+                images = stitch_images(
+                    self.postprocess(1 - edges),
+                    self.postprocess(images * (1 - masks) + masks),
+                    self.postprocess(outputs_merged),
+                    img_per_row = image_per_row
+                )
+
+                name = os.path.join(self.results_path, fname + ".png")
+                print('\nsaving sample ' + name)
+                images.save(name)
 
         print('\nEnd test....')
 
@@ -373,15 +390,15 @@ class EdgeConnect():
             inputs = (images * (1 - masks)) + masks
             outputs, landmarks = self.inpaint_model(images, edges, masks)
             outputs_merged = (outputs * masks) + (images * (1 - masks))
-            outputs_landmarks = outputs_merged.data
-            landmarks = 176 * landmarks.data.numpy()
+            outputs_landmarks = outputs_merged.clone()
+            landmarks = 176 * landmarks.cpu().data.numpy()
             ranges = [[0,0], [0,1], [1,0], [1,1], [-1,-1], [-1,0], [0,-1], [-1,1], [1,-1]]
-            
+
             index = 0
             for l in landmarks:
                 for i in range(0,5):
-                    x = l[:,2*i]
-                    y = l[:,2*i + 1]
+                    y = int(l[2*i])
+                    x = int(l[2*i + 1])
                     for r in ranges:
                         outputs_landmarks[index,0, x+r[0], y+r[1]] = 1
                         outputs_landmarks[index,1, x+r[0], y+r[1]] = 1
@@ -416,6 +433,7 @@ class EdgeConnect():
 
 
         path = os.path.join(self.samples_path, self.model_name)
+        print ("path is :", path)
         name = os.path.join(path, str(iteration).zfill(5) + ".png")
         create_dir(path)
         print('\nsaving sample ' + name)
