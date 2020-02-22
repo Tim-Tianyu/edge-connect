@@ -5,5 +5,5 @@ source ~/.benv
 conda activate edge
 
 python test.py \
-  --model 1 \
-  --checkpoints ./checkpoints/celeb --input ../edge-connect/data/celeba/test --mask ../edge-connect/mask/testing_mask_dataset --output ./checkpoints/results_celeba_dummy 
+  --model 3 \
+  --checkpoints ./checkpoints/celeb --input ../edge-connect/data/celeba/test --mask ../edge-connect/mask/testing_mask_dataset --output ./checkpoints/celeb/results_celeba_dummy

@@ -75,11 +75,11 @@ class BaseModel(nn.Module):
         torch.save({
             'iteration': self.iteration,
             'generator': self.generator.state_dict()
-        }, os.path.join(path, name + '_' + str(self.iteration)'_gen.pth'))
-        
+        }, os.path.join(path, self.name + '_' + str(self.iteration)+'_gen.pth'))
+
         torch.save({
             'discriminator': self.discriminator.state_dict()
-        }, os.path.join(path, name + '_' + str(self.iteration)'_dis.pth'))
+        }, os.path.join(path, self.name + '_' + str(self.iteration)+'_dis.pth'))
 
 class EdgeModel(BaseModel):
     def __init__(self, config):
@@ -217,7 +217,8 @@ class InpaintingModel(BaseModel):
         )
 
     def process(self, images, edges, masks, landmarks):
-        self.iteration += 1
+        if (self.training):
+            self.iteration += 1
 
         # zero optimizers
         self.gen_optimizer.zero_grad()
