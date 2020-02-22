@@ -20,22 +20,22 @@ class BaseModel(nn.Module):
 
     def modify_key(self, state_dict):
         new_state_dict = OrderedDict()
-        if len(config.GPU) > 1:
+        if len(self.config.GPU) > 1:
             # add "module." if not contain
             for k, v in state_dict.items():
-                if (not k[:7].contains("module.")):
+                if (not "module." in k[:7]):
                     new_state_dict["module."+k] = v
                 else:
                     return state_dict
         else:
             # remove "module." if contain
             for k, v in state_dict.items():
-                if (k[:7].contains("module.")):
+                if ("module." in k[:7]):
                     new_state_dict[k[7:]] = v
                 else:
                     return state_dict
         return new_state_dict
-                
+
     def load(self):
         if os.path.exists(self.gen_weights_path):
             print('Loading %s generator...' % self.name)
@@ -45,7 +45,7 @@ class BaseModel(nn.Module):
             else:
                 data = torch.load(self.gen_weights_path, map_location=lambda storage, loc: storage)
 
-            self.generator.load_state_dict(modify_key(data['generator']))
+            self.generator.load_state_dict(self.modify_key(data['generator']))
             self.iteration = data['iteration']
 
         # load discriminator only when training
@@ -57,7 +57,7 @@ class BaseModel(nn.Module):
             else:
                 data = torch.load(self.dis_weights_path, map_location=lambda storage, loc: storage)
 
-            self.discriminator.load_state_dict(modify_key(data['discriminator']))
+            self.discriminator.load_state_dict(self.modify_key(data['discriminator']))
 
     def save(self):
         print('\nsaving %s...\n' % self.name)
@@ -252,11 +252,11 @@ class InpaintingModel(BaseModel):
         gen_style_loss = self.style_loss(outputs * masks, images * masks)
         gen_style_loss = gen_style_loss * self.config.STYLE_LOSS_WEIGHT
         gen_loss += gen_style_loss
-        
+
         # generator landmark prediction loss
         gen_landmark_loss = nn.functional.mse_loss(100*landmarks, 100*landmarks_predict)
         gen_landmark_loss = gen_landmark_loss * self.config.LANDMARK_LOSS_WEIGHT
-        
+
         # create logs
         logs = [
             ("l_d2", dis_loss.item()),

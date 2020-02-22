@@ -197,11 +197,10 @@ class EdgeConnect():
                 # log model at checkpoints
                 if self.config.LOG_INTERVAL and iteration % self.config.LOG_INTERVAL == 0:
                     self.log(logs)
-                    print ("log: ", logs)
+
                 # sample model at checkpoints
                 if self.config.SAMPLE_INTERVAL and iteration % self.config.SAMPLE_INTERVAL == 0:
                     self.sample()
-                    print ("sample found")
 
                 # evaluate model at checkpoints
                 if self.config.EVAL_INTERVAL and iteration % self.config.EVAL_INTERVAL == 0:
@@ -211,7 +210,6 @@ class EdgeConnect():
                 # save model at checkpoints
                 if self.config.SAVE_INTERVAL and iteration % self.config.SAVE_INTERVAL == 0:
                     self.save()
-                    print("we are saving models")
 
         print('\nEnd training....')
 
@@ -334,11 +332,11 @@ class EdgeConnect():
                 outputs, _ = self.inpaint_model(images, edges, masks)
                 outputs_merged = (outputs * masks) + (images * (1 - masks))
 
-            #output = self.postprocess(outputs_merged)[0]
+            output = self.postprocess(outputs_merged)[0]
             path = os.path.join(self.results_path, name)
             print(index, name)
 
-            #imsave(output, path)
+            imsave(output, path)
 
             if self.debug:
                 # edges = self.postprocess(1 - edges)[0]
