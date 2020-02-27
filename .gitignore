@@ -113,3 +113,6 @@ data/
 mask/
 CelebAMask-HQ/
 result/
+celeba_resize/
+old_masks/
+slurm-*.out
