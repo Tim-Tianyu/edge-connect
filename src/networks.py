@@ -62,32 +62,6 @@ class InpaintGenerator(BaseNetwork):
 
         self.middle = nn.Sequential(*blocks)
 
-        self.encoder_landmark = nn.Sequential(
-            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=4, stride=2, padding=1), # 1,048,576
-            nn.InstanceNorm2d(256, track_running_stats=False),
-            nn.ReLU(True)
-        )
-
-        self.conv_landmark = nn.Sequential(
-            nn.MaxPool2d(kernel_size=2),
-            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=3, padding=1), # 589,824
-            nn.InstanceNorm2d(256, track_running_stats=False),
-            nn.ReLU(True),
-        )
-
-        self.liner_landmark = nn.Sequential(
-            nn.Linear(4*4*256, 256), # 1,048,576
-            nn.Dropout(p=0.3),
-            nn.Linear(256,10), # 2560
-            nn.Sigmoid()
-        )
-
-        self.decoder_landmark = nn.Sequential(
-            nn.ConvTranspose2d(in_channels=256, out_channels=256, kernel_size=4, stride=2, padding=1),
-            nn.InstanceNorm2d(128, track_running_stats=False),
-            nn.ReLU(True)
-        )
-
         self.decoder = nn.Sequential(
             nn.ConvTranspose2d(in_channels=512, out_channels=128, kernel_size=4, stride=2, padding=1),
             nn.InstanceNorm2d(128, track_running_stats=False),
@@ -144,9 +118,35 @@ class EdgeGenerator(BaseNetwork):
             blocks.append(block)
 
         self.middle = nn.Sequential(*blocks)
+        
+        self.encoder_landmark = nn.Sequential(
+            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=4, stride=2, padding=1), # 1,048,576
+            nn.InstanceNorm2d(256, track_running_stats=False),
+            nn.ReLU(True)
+        )
+
+        self.conv_landmark = nn.Sequential(
+            nn.MaxPool2d(kernel_size=2),
+            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=3, padding=1), # 589,824
+            nn.InstanceNorm2d(256, track_running_stats=False),
+            nn.ReLU(True),
+        )
+
+        self.liner_landmark = nn.Sequential(
+            nn.Linear(4*4*256, 256), # 1,048,576
+            nn.Dropout(p=0.3),
+            nn.Linear(256,10), # 2560
+            nn.Sigmoid()
+        )
+
+        self.decoder_landmark = nn.Sequential(
+            nn.ConvTranspose2d(in_channels=256, out_channels=256, kernel_size=4, stride=2, padding=1),
+            nn.InstanceNorm2d(128, track_running_stats=False),
+            nn.ReLU(True)
+        )
 
         self.decoder = nn.Sequential(
-            spectral_norm(nn.ConvTranspose2d(in_channels=256, out_channels=128, kernel_size=4, stride=2, padding=1), use_spectral_norm),
+            spectral_norm(nn.ConvTranspose2d(in_channels=512, out_channels=128, kernel_size=4, stride=2, padding=1), use_spectral_norm),
             nn.InstanceNorm2d(128, track_running_stats=False),
             nn.ReLU(True),
 
@@ -162,16 +162,18 @@ class EdgeGenerator(BaseNetwork):
             self.init_weights()
 
     def forward(self, x):
-        #print ("edge at step 1 is ", x.size())
         x = self.encoder(x)
-        #print ("edge at step 2 is ", x.size())
         x = self.middle(x)
-        #print ("edge at step 3 is ", x.size())
+        # landmark prediction
+        l_e = self.encoder_landmark(x)
+        l_d = self.decoder_landmark(l_e)
+        landmark = self.conv_landmark(l_e)
+        landmark = self.liner_landmark(landmark.view(landmark.size()[0], -1))
+        
+        x = torch.cat((x, l_d), dim=1)
         x = self.decoder(x)
-        #print ("edge at step 4 is ", x.size())
         x = torch.sigmoid(x)
-        #print ("edge is ", x.size())
-        return x
+        return x, landmark
 
 
 class Discriminator(BaseNetwork):

@@ -113,7 +113,7 @@ class EdgeModel(BaseModel):
             betas=(config.BETA1, config.BETA2)
         )
 
-    def process(self, images, edges, masks):
+    def process(self, images, edges, masks, landmarks):
         self.iteration += 1
 
 
@@ -123,7 +123,7 @@ class EdgeModel(BaseModel):
 
 
         # process outputs
-        outputs = self(images, edges, masks)
+        outputs, landmarks_predict = self(images, edges, masks)
         gen_loss = 0
         dis_loss = 0
 
@@ -144,7 +144,6 @@ class EdgeModel(BaseModel):
         gen_gan_loss = self.adversarial_loss(gen_fake, True, False)
         gen_loss += gen_gan_loss
 
-
         # generator feature matching loss
         gen_fm_loss = 0
         for i in range(len(dis_real_feat)):
@@ -152,6 +151,8 @@ class EdgeModel(BaseModel):
         gen_fm_loss = gen_fm_loss * self.config.FM_LOSS_WEIGHT
         gen_loss += gen_fm_loss
 
+        gen_landmark_loss = nn.functional.mse_loss(100*landmarks, 100*landmarks_predict)
+        gen_landmark_loss = gen_landmark_loss * self.config.LANDMARK_LOSS_WEIGHT
 
         # create logs
         logs = [
@@ -160,22 +161,22 @@ class EdgeModel(BaseModel):
             ("l_fm", gen_fm_loss.item()),
         ]
 
-        return outputs, gen_loss, dis_loss, logs
+        return outputs, gen_loss, dis_loss, gen_landmark_loss, logs
 
     def forward(self, images, edges, masks):
         edges_masked = (edges * (1 - masks))
         images_masked = (images * (1 - masks)) + masks
         inputs = torch.cat((images_masked, edges_masked, masks), dim=1)
-        outputs = self.generator(inputs)                                # in: [grayscale(1) + edge(1) + mask(1)]
-        return outputs
+        outputs, landmarks = self.generator(inputs)                                # in: [grayscale(1) + edge(1) + mask(1)]
+        return outputs, landmarks
 
-    def backward(self, gen_loss=None, dis_loss=None):
+    def backward(self, gen_loss=None, dis_loss=None, landmark_loss=None):
         if dis_loss is not None:
             dis_loss.backward()
         self.dis_optimizer.step()
 
         if gen_loss is not None:
-            gen_loss.backward()
+            (gen_loss + gen_landmark_loss).backward()
         self.gen_optimizer.step()
 
 
@@ -216,7 +217,7 @@ class InpaintingModel(BaseModel):
             betas=(config.BETA1, config.BETA2)
         )
 
-    def process(self, images, edges, masks, landmarks):
+    def process(self, images, edges, masks):
         if (self.training):
             self.iteration += 1
 
@@ -226,7 +227,7 @@ class InpaintingModel(BaseModel):
 
 
         # process outputs
-        outputs, landmarks_predict = self(images, edges, masks)
+        outputs = self(images, edges, masks)
         gen_loss = 0
         dis_loss = 0
 
@@ -264,10 +265,6 @@ class InpaintingModel(BaseModel):
         gen_style_loss = gen_style_loss * self.config.STYLE_LOSS_WEIGHT
         gen_loss += gen_style_loss
 
-        # generator landmark prediction loss
-        gen_landmark_loss = nn.functional.mse_loss(100*landmarks, 100*landmarks_predict)
-        gen_landmark_loss = gen_landmark_loss * self.config.LANDMARK_LOSS_WEIGHT
-
         # create logs
         logs = [
             ("l_d2", dis_loss.item()),
@@ -277,17 +274,17 @@ class InpaintingModel(BaseModel):
             ("l_sty", gen_style_loss.item()),
         ]
 
-        return outputs, gen_loss, dis_loss, gen_landmark_loss, logs
+        return outputs, gen_loss, dis_loss, logs
 
     def forward(self, images, edges, masks):
         images_masked = (images * (1 - masks).float()) + masks
         inputs = torch.cat((images_masked, edges), dim=1)
-        outputs, landmarks = self.generator(inputs)                                    # in: [rgb(3) + edge(1)]
-        return outputs, landmarks
+        outputs = self.generator(inputs)                                    # in: [rgb(3) + edge(1)]
+        return outputs
 
-    def backward(self, gen_loss=None, dis_loss=None, gen_landmark_loss=None):
+    def backward(self, gen_loss=None, dis_loss=None):
         dis_loss.backward()
         self.dis_optimizer.step()
 
-        (gen_loss + gen_landmark_loss).backward()
+        gen_loss.backward()
         self.gen_optimizer.step()
