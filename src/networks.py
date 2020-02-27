@@ -81,16 +81,9 @@ class InpaintGenerator(BaseNetwork):
     def forward(self, x):
         x = self.encoder(x)
         x = self.middle(x)
-        # landmark prediction
-        l_e = self.encoder_landmark(x)
-        l_d = self.decoder_landmark(l_e)
-        landmark = self.conv_landmark(l_e)
-        landmark = self.liner_landmark(landmark.view(landmark.size()[0], -1))
-
-        x = torch.cat((x, l_d), dim=1)
         x = self.decoder(x)
         x = (torch.tanh(x) + 1) / 2
-        return x, landmark
+        return x
 
 
 class EdgeGenerator(BaseNetwork):
