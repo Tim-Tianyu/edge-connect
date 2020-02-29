@@ -116,7 +116,7 @@ class EdgeConnect():
                 # edge model
                 if model == 1:
                     # train
-                    outputs, gen_loss, dis_loss, landmark_loss logs = self.edge_model.process(images_gray, edges, masks, landmarks)
+                    outputs, gen_loss, dis_loss, landmark_loss, logs = self.edge_model.process(images_gray, edges, masks, landmarks)
 
                     # metrics
                     precision, recall = self.edgeacc(edges * masks, outputs * masks)
@@ -293,7 +293,7 @@ class EdgeConnect():
             # joint model
             else:
                 # eval
-                e_outputs, e_gen_loss, e_dis_loss, e_landmark_loss e_logs = self.edge_model.process(images_gray, edges, masks, landmarks)
+                e_outputs, e_gen_loss, e_dis_loss, e_landmark_loss,e_logs = self.edge_model.process(images_gray, edges, masks, landmarks)
                 e_outputs = e_outputs * masks + edges * (1 - masks)
                 i_outputs, i_gen_loss, i_dis_loss,i_logs = self.inpaint_model.process(images, e_outputs, masks)
                 outputs_merged = (i_outputs * masks) + (images * (1 - masks))
@@ -408,8 +408,6 @@ class EdgeConnect():
                     x = int(l[2*i + 1])
                     for r in ranges:
                         outputs_landmarks[index,0, x+r[0], y+r[1]] = 1
-                        outputs_landmarks[index,1, x+r[0], y+r[1]] = 1
-                        outputs_landmarks[index,2, x+r[0], y+r[1]] = 1
                 index = index+1
 
         # inpaint model

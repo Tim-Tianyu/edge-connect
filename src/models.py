@@ -176,7 +176,7 @@ class EdgeModel(BaseModel):
         self.dis_optimizer.step()
 
         if gen_loss is not None:
-            (gen_loss + gen_landmark_loss).backward()
+            (gen_loss + landmark_loss).backward()
         self.gen_optimizer.step()
 
 
