@@ -63,7 +63,7 @@ class InpaintGenerator(BaseNetwork):
         self.middle = nn.Sequential(*blocks)
 
         self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(in_channels=512, out_channels=128, kernel_size=4, stride=2, padding=1),
+            nn.ConvTranspose2d(in_channels=256, out_channels=128, kernel_size=4, stride=2, padding=1),
             nn.InstanceNorm2d(128, track_running_stats=False),
             nn.ReLU(True),
 
@@ -111,7 +111,7 @@ class EdgeGenerator(BaseNetwork):
             blocks.append(block)
 
         self.middle = nn.Sequential(*blocks)
-        
+
         self.encoder_landmark = nn.Sequential(
             nn.Conv2d(in_channels=256, out_channels=256, kernel_size=4, stride=2, padding=1), # 1,048,576
             nn.InstanceNorm2d(256, track_running_stats=False),
@@ -162,7 +162,7 @@ class EdgeGenerator(BaseNetwork):
         l_d = self.decoder_landmark(l_e)
         landmark = self.conv_landmark(l_e)
         landmark = self.liner_landmark(landmark.view(landmark.size()[0], -1))
-        
+
         x = torch.cat((x, l_d), dim=1)
         x = self.decoder(x)
         x = torch.sigmoid(x)
