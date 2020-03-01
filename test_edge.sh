@@ -6,4 +6,4 @@ conda activate edge
 
 python test.py \
   --model 3 \
-  --checkpoints ./checkpoints/celeba_edge --input ../edge-connect/data/celeba/test --output ./checkpoints/celeba_edge/results_celeba_dummy
+  --checkpoints ./checkpoints/celeba_edge --input ../edge-connect/data/celeba/test --output ./checkpoints/celeba_edge/results
