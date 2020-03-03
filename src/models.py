@@ -217,7 +217,7 @@ class InpaintingModel(BaseModel):
             betas=(config.BETA1, config.BETA2)
         )
 
-    def process(self, images, edges, masks):
+    def process(self, images, edges, masks, landmarks):
         if (self.training):
             self.iteration += 1
 
@@ -264,6 +264,10 @@ class InpaintingModel(BaseModel):
         gen_style_loss = self.style_loss(outputs * masks, images * masks)
         gen_style_loss = gen_style_loss * self.config.STYLE_LOSS_WEIGHT
         gen_loss += gen_style_loss
+        
+        # generator landmark prediction loss
+        gen_landmark_loss = nn.functional.mse_loss(100*landmarks, 100*landmarks_predict)
+        gen_landmark_loss = gen_landmark_loss * self.config.LANDMARK_LOSS_WEIGHT
 
         # create logs
         logs = [
@@ -274,17 +278,17 @@ class InpaintingModel(BaseModel):
             ("l_sty", gen_style_loss.item()),
         ]
 
-        return outputs, gen_loss, dis_loss, logs
+        return outputs, gen_loss, dis_loss, gen_landmark_loss, logs
 
     def forward(self, images, edges, masks):
         images_masked = (images * (1 - masks).float()) + masks
         inputs = torch.cat((images_masked, edges), dim=1)
-        outputs = self.generator(inputs)                                    # in: [rgb(3) + edge(1)]
-        return outputs
+        outputs, landmarks = self.generator(inputs)                                    # in: [rgb(3) + edge(1)]
+        return outputs, landmarks
 
-    def backward(self, gen_loss=None, dis_loss=None):
+    def backward(self, gen_loss=None, dis_loss=None, gen_landmark_loss=None):
         dis_loss.backward()
         self.dis_optimizer.step()
 
-        gen_loss.backward()
+        (gen_loss+gen_landmark_loss).backward()
         self.gen_optimizer.step()
