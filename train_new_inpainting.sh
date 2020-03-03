@@ -4,6 +4,8 @@ echo ". /home/s1655829/miniconda2/etc/profile.d/conda.sh" >> ~/.benv
 source ~/.benv
 conda activate edge
 
-python test.py \
-  --model 2 \
-  --checkpoints ./checkpoints/celeba_inpainting --input ../edge-connect/data/celeba/test --output ./checkpoints/celeba_inpainting/results_canny
+mkdir ./checkpoints/celeba_new_inpainting/models
+mkdir ./checkpoints/celeba_new_inpainting/samples
+
+python train.py --model 3 --checkpoints ./checkpoints/celeba_new_inpainting
+

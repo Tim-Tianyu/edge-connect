@@ -1,0 +1,8 @@
+[data_path] = celeba_resize/test
+[output_path] = ./checkpoints/celeba_inpainting/results
+[debug] = 0
+100 images processed PSNR: 25.5193 SSIM: 0.8698 MAE: 0.0416
+200 images processed PSNR: 25.2470 SSIM: 0.8735 MAE: 0.0418
+300 images processed PSNR: 25.3074 SSIM: 0.8797 MAE: 0.0409
+400 images processed PSNR: 25.5521 SSIM: 0.8824 MAE: 0.0391
+500 images processed PSNR: 25.5651 SSIM: 0.8826 MAE: 0.0384
