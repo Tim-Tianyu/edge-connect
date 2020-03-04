@@ -189,7 +189,7 @@ class EdgeConnect():
                     logs = e_logs + i_logs
 
                     # backward
-                    self.inpaint_model.backward(i_gen_loss, i_dis_loss, i_gen_landmark_loss)
+                    self.inpaint_model.backward(i_gen_loss, i_dis_loss, i_gen_landmark_loss, retain_graph=True)
                     self.edge_model.backward(e_gen_loss, e_dis_loss, e_landmark_loss)
                     iteration = self.inpaint_model.iteration
 

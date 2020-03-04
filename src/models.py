@@ -170,13 +170,13 @@ class EdgeModel(BaseModel):
         outputs, landmarks = self.generator(inputs)                                # in: [grayscale(1) + edge(1) + mask(1)]
         return outputs, landmarks
 
-    def backward(self, gen_loss=None, dis_loss=None, landmark_loss=None):
+    def backward(self, gen_loss=None, dis_loss=None, landmark_loss=None, retain_graph=False):
         if dis_loss is not None:
-            dis_loss.backward()
+            dis_loss.backward(retain_graph=retain_graph)
         self.dis_optimizer.step()
 
         if gen_loss is not None:
-            (gen_loss + landmark_loss).backward()
+            (gen_loss + landmark_loss).backward(retain_graph=retain_graph)
         self.gen_optimizer.step()
 
 
@@ -286,9 +286,9 @@ class InpaintingModel(BaseModel):
         outputs, landmarks = self.generator(inputs)                                    # in: [rgb(3) + edge(1)]
         return outputs, landmarks
 
-    def backward(self, gen_loss=None, dis_loss=None, gen_landmark_loss=None):
-        dis_loss.backward()
+    def backward(self, gen_loss=None, dis_loss=None, gen_landmark_loss=None, retain_graph=False):
+        dis_loss.backward(retain_graph=retain_graph)
         self.dis_optimizer.step()
 
-        (gen_loss+gen_landmark_loss).backward()
+        (gen_loss+gen_landmark_loss).backward(retain_graph=retain_graph)
         self.gen_optimizer.step()
