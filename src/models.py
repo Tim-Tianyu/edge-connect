@@ -227,7 +227,7 @@ class InpaintingModel(BaseModel):
 
 
         # process outputs
-        outputs = self(images, edges, masks)
+        outputs, landmarks_predict = self(images, edges, masks)
         gen_loss = 0
         dis_loss = 0
 
@@ -264,7 +264,7 @@ class InpaintingModel(BaseModel):
         gen_style_loss = self.style_loss(outputs * masks, images * masks)
         gen_style_loss = gen_style_loss * self.config.STYLE_LOSS_WEIGHT
         gen_loss += gen_style_loss
-        
+
         # generator landmark prediction loss
         gen_landmark_loss = nn.functional.mse_loss(100*landmarks, 100*landmarks_predict)
         gen_landmark_loss = gen_landmark_loss * self.config.LANDMARK_LOSS_WEIGHT
