@@ -271,8 +271,8 @@ class EdgeConnect():
                 mae = (torch.sum(torch.abs(images - outputs_merged)) / torch.sum(images)).float()
                 logs.append(('psnr', psnr.item()))
                 logs.append(('mae', mae.item()))
-                logs = [("it", iteration), ] + logs
-                self.log_iter(logs, self.inpaint_model.iteration)
+                # logs = [("it", iteration), ] + logs
+                # self.log_iter(logs, self.inpaint_model.iteration)
 
             # inpaint with edge model
             elif model == 3:
@@ -310,8 +310,8 @@ class EdgeConnect():
                 logs = e_logs + i_logs
 
 
-            #logs = [("it", iteration), ] + logs
-            #self.log_iter(logs, self.inpaint_model.iteration)
+            logs = [("it", iteration), ] + logs
+            self.log_iter(logs, self.inpaint_model.iteration)
             progbar.add(len(images), values=logs)
 
     def test(self):
