@@ -258,6 +258,8 @@ class EdgeConnect():
                 logs.append(('precision', precision.item()))
                 logs.append(('recall', recall.item()))
                 logs.append(('landmark_loss', torch.sum(landmark_loss).item()))
+                logs = [("it", iteration), ] + logs
+                self.log_iter(logs, self.edge_model.iteration)
 
 
             # inpaint model
@@ -271,8 +273,8 @@ class EdgeConnect():
                 mae = (torch.sum(torch.abs(images - outputs_merged)) / torch.sum(images)).float()
                 logs.append(('psnr', psnr.item()))
                 logs.append(('mae', mae.item()))
-                # logs = [("it", iteration), ] + logs
-                # self.log_iter(logs, self.inpaint_model.iteration)
+                logs = [("it", iteration), ] + logs
+                self.log_iter(logs, self.inpaint_model.iteration)
 
             # inpaint with edge model
             elif model == 3:
@@ -289,6 +291,8 @@ class EdgeConnect():
                 logs.append(('psnr', psnr.item()))
                 logs.append(('mae', mae.item()))
                 logs.append(('landmark_loss', torch.sum(landmark_loss).item()))
+                logs = [("it", iteration), ] + logs
+                self.log_iter(logs, self.inpaint_model.iteration)
 
             # joint model
             else:
@@ -308,10 +312,9 @@ class EdgeConnect():
                 i_logs.append(('mae', mae.item()))
                 i_logs.append(('landmark_loss', torch.sum(e_landmark_loss).item()))
                 logs = e_logs + i_logs
-
-
-            logs = [("it", iteration), ] + logs
-            self.log_iter(logs, self.inpaint_model.iteration)
+                logs = [("it", iteration), ] + logs
+                self.log_iter(logs, self.inpaint_model.iteration)
+            
             progbar.add(len(images), values=logs)
 
     def test(self):
