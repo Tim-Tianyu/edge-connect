@@ -426,6 +426,7 @@ class EdgeConnect():
             landmarks = 176 * landmarks.cpu().data.numpy()
             ranges = [[0,0], [0,1], [1,0], [1,1], [-1,-1], [-1,0], [0,-1], [-1,1], [1,-1]]
             
+            index = 0
             for l in landmarks:
                 for i in range(0,5):
                     y = int(l[2*i])
@@ -449,6 +450,7 @@ class EdgeConnect():
             landmarks = 176 * landmarks.cpu().data.numpy()
             ranges = [[0,0], [0,1], [1,0], [1,1], [-1,-1], [-1,0], [0,-1], [-1,1], [1,-1]]
             
+            index = 0
             for l in landmarks:
                 for i in range(0,5):
                     y = int(l[2*i])
