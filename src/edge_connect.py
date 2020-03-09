@@ -100,6 +100,9 @@ class EdgeConnect():
         if total == 0:
             print('No training data was provided! Check \'TRAIN_FLIST\' value in the configuration file.')
             return
+        
+        if (self.config.EVAL_INTERVAL):
+                self.eval()
 
         while(keep_training):
             epoch += 1
