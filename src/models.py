@@ -114,7 +114,8 @@ class EdgeModel(BaseModel):
         )
 
     def process(self, images, edges, masks, landmarks):
-        self.iteration += 1
+        if (self.training):
+            self.iteration += 1
 
 
         # zero optimizers
