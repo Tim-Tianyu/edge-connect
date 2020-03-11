@@ -79,7 +79,7 @@ class EdgeConnect():
             self.inpaint_model.save_iter(self.model_path)
 
         else:
-            self.edge_model.save()
+            self.edge_model.save_iter(self.model_path)
             self.inpaint_model.save_iter(self.model_path)
 
     def train(self):
