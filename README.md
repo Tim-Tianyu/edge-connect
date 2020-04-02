@@ -8,4 +8,4 @@ The folder "./log" contains statistics in training time, we use plot_log.ipynb t
 We have include our final model in "./checkpoints/final"
 
 # Test results
-You can download the final test results of different models metioned in our report at ?, the original_result is result for (G1, G2), edge_result is result for (G1', G2), inpaint_result is result for (G1, G2'), whole_model_result is result for (G1', G2').
+You can download the final test results of different models metioned in our report at https://drive.google.com/file/d/1mHOSoeAEiP7Zs9hEW00JxbRQy_iqOjcb/view?usp=sharing, the original_result is result for (G1, G2), edge_result is result for (G1', G2), inpaint_result is result for (G1, G2'), whole_model_result is result for (G1', G2').
